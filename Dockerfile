@@ -4,8 +4,8 @@ FROM ubuntu:16.04
 MAINTAINER rbjoergensen <rasmus@callofthevoid.dk>
 
 # Allow postfix to install without interaction.
-RUN echo "postfix postfix/mailname string example.com" | debconf-set-selections
-RUN echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections
+RUN debconf-set-selections <<< "postfix postfix/mailname string example.com"
+RUN debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
 
 RUN apt-get update && apt-get install -y -q \
                     mailutils
