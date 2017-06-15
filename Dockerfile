@@ -10,13 +10,16 @@ RUN echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set
 RUN apt-get update && apt-get install -y -q \
 					apt-utils \
                     mailutils \
-					libsasl2-modules
+					libsasl2-modules \
+					rsyslog
 
 RUN cat /etc/postfix/main.cf
 
-RUN sed '/relayhost =/d' /etc/postfix/main.cf && \
+RUN sed -i "/\b\(relayhost\)\b/d" /etc/postfix/main.cf && \
+	sed -i 's/inet_interfaces = all/inet_interfaces = '"$(cat /etc/hosts | grep $HOSTNAME| awk -F\  '{print $1}')"'/' /etc/postfix/main.cf && \
+    sed -i '/mynetworks/s/$/ '"$(cat /etc/hosts | grep $HOSTNAME| awk -F. '{print $1 "." $2 ".0.0\/16"}')"'/' /etc/postfix/main.cf && \
 	echo "smtp_sasl_auth_enable = yes" >> /etc/postfix/main.cf && \
-	echo "smtp_sasl_password_maps = static:yourSendGridUsername:yourSendGridPassword" >> /etc/postfix/main.cf && \
+	echo "smtp_sasl_password_maps = static:username:password" >> /etc/postfix/main.cf && \
 	echo "smtp_sasl_security_options = noanonymous" >> /etc/postfix/main.cf && \
 	echo "smtp_tls_security_level = encrypt" >> /etc/postfix/main.cf && \
 	echo "header_size_limit = 4096000" >> /etc/postfix/main.cf && \
@@ -31,4 +34,4 @@ EXPOSE 80 25 587
 
 # CMD ["executable","param1","param2"]
 
-#RUN cat /etc/mail/access
+RUN cat /var/log/mail.log
