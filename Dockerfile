@@ -14,6 +14,6 @@ RUN cat /etc/postfix/main.cf
 
 RUN systemctl restart postfix
 
-echo "This is the body of the email" | mail -s "This is the subject line" rasmusj@trendsales.dk
+RUN echo "This is the body of the email" | mail -s "This is the subject line" rasmusj@trendsales.dk
 
 # CMD ["executable","param1","param2"]
