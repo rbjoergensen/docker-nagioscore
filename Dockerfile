@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y -q \
 
 RUN cat /etc/postfix/main.cf
 
-RUN sed '/relayhost =/d' ./infile && \
+RUN sed '/relayhost =/d' /etc/postfix/main.cf && \
 	echo "smtp_sasl_auth_enable = yes" >> /etc/postfix/main.cf && \
 	echo "smtp_sasl_password_maps = static:yourSendGridUsername:yourSendGridPassword" >> /etc/postfix/main.cf && \
 	echo "smtp_sasl_security_options = noanonymous" >> /etc/postfix/main.cf && \
