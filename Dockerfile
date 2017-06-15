@@ -9,12 +9,25 @@ RUN echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set
 
 RUN apt-get update && apt-get install -y -q \
 					apt-utils \
-                    mailutils
+                    mailutils \
+					libsasl2-modules
 
 RUN cat /etc/postfix/main.cf
+
+RUN echo "smtp_sasl_auth_enable = yes" >> /etc/postfix/main.cf && \
+	     "smtp_sasl_password_maps = static:yourSendGridUsername:yourSendGridPassword" >> /etc/postfix/main.cf && \
+		 "smtp_sasl_security_options = noanonymous" >> /etc/postfix/main.cf && \
+		 "smtp_tls_security_level = encrypt" >> /etc/postfix/main.cf && \
+		 "header_size_limit = 4096000" >> /etc/postfix/main.cf && \
+		 "relayhost = [smtp.sendgrid.net]:587" >> /etc/postfix/main.cf && \
+		 cat /etc/postfix/main.cf
 
 RUN service postfix restart
 
 RUN echo "This is the body of the email" | mail -s "This is the subject line" rasmusj@trendsales.dk
 
+EXPOSE 80 25 587
+
 # CMD ["executable","param1","param2"]
+
+RUN cat /etc/mail/access
