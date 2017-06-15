@@ -9,4 +9,4 @@ RUN touch /test/test.file
 RUN echo "hello there." > /test/test.file
 
 # CMD ["executable","param1","param2"]
-RUN tail -f /test/test.file
+RUN tail /test/test.file
