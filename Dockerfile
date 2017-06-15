@@ -8,11 +8,12 @@ RUN echo "postfix postfix/mailname string example.com" | debconf-set-selections
 RUN echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections
 
 RUN apt-get update && apt-get install -y -q \
+					apt-utils \
                     mailutils
 
 RUN cat /etc/postfix/main.cf
 
-RUN systemctl restart postfix
+RUN service postfix restart
 
 RUN echo "This is the body of the email" | mail -s "This is the subject line" rasmusj@trendsales.dk
 
