@@ -15,12 +15,12 @@ RUN apt-get update && apt-get install -y -q \
 RUN cat /etc/postfix/main.cf
 
 RUN echo "smtp_sasl_auth_enable = yes" >> /etc/postfix/main.cf && \
-	     "smtp_sasl_password_maps = static:yourSendGridUsername:yourSendGridPassword" >> /etc/postfix/main.cf && \
-		 "smtp_sasl_security_options = noanonymous" >> /etc/postfix/main.cf && \
-		 "smtp_tls_security_level = encrypt" >> /etc/postfix/main.cf && \
-		 "header_size_limit = 4096000" >> /etc/postfix/main.cf && \
-		 "relayhost = [smtp.sendgrid.net]:587" >> /etc/postfix/main.cf && \
-		 cat /etc/postfix/main.cf
+	echo "smtp_sasl_password_maps = static:yourSendGridUsername:yourSendGridPassword" >> /etc/postfix/main.cf && \
+	echo "smtp_sasl_security_options = noanonymous" >> /etc/postfix/main.cf && \
+	echo "smtp_tls_security_level = encrypt" >> /etc/postfix/main.cf && \
+	echo "header_size_limit = 4096000" >> /etc/postfix/main.cf && \
+	echo "relayhost = [smtp.sendgrid.net]:587" >> /etc/postfix/main.cf && \
+	cat /etc/postfix/main.cf
 
 RUN service postfix restart
 
