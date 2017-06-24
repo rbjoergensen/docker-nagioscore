@@ -7,13 +7,13 @@ MAINTAINER rbjoergensen <rasmusbojorgensen@gmail.com>
 #################################
 
 RUN apt-get -y update && \
-    mkdir /startup && \
+    mkdir /utilities && \
 	apt-get -y install curl
 
-COPY ./sendmail.sh /startup/sendmail.sh
+COPY ./sendmail.sh /utilities/sendmail.sh
 
-RUN chmod 000 /startup/sendmail.sh && \
-    chmod +x /startup/sendmail.sh
+RUN chmod 000 /utilities/sendmail.sh && \
+    chmod +x /utilities/sendmail.sh
 
 #################################
 # Nagios and Apache
@@ -58,9 +58,6 @@ RUN ln -s /etc/apache2/sites-available/nagios.conf /etc/apache2/sites-enabled/
 #################################
 # Final configuration
 #################################
-
-RUN service apache2 start
-RUN service nagios start
 
 EXPOSE 80
 
