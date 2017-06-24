@@ -1,37 +1,71 @@
-# From image
 FROM ubuntu:16.04
 
-MAINTAINER rbjoergensen <rasmus@callofthevoid.dk>
+MAINTAINER rbjoergensen <rasmusbojorgensen@gmail.com>
 
-# Allow postfix to install without interaction.
-RUN echo "postfix postfix/mailname string example.com" | debconf-set-selections
-RUN echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections
+#################################
+# Mail script using Sendgrid
+#################################
 
-RUN apt-get update && apt-get install -y -q \
-					apt-utils \
-                    mailutils \
-					libsasl2-modules \
-					rsyslog
+RUN apt-get -y update && \
+    mkdir /startup && \
+	apt-get -y install curl
 
-RUN cat /etc/postfix/main.cf
+COPY ./sendmail.sh /startup/sendmail.sh
 
-RUN sed -i "/\b\(relayhost\)\b/d" /etc/postfix/main.cf && \
-	sed -i 's/inet_interfaces = all/inet_interfaces = '"$(cat /etc/hosts | grep $HOSTNAME| awk -F\  '{print $1}')"'/' /etc/postfix/main.cf && \
-    sed -i '/mynetworks/s/$/ '"$(cat /etc/hosts | grep $HOSTNAME| awk -F. '{print $1 "." $2 ".0.0\/16"}')"'/' /etc/postfix/main.cf && \
-	echo "smtp_sasl_auth_enable = yes" >> /etc/postfix/main.cf && \
-	echo "smtp_sasl_password_maps = static:username:password" >> /etc/postfix/main.cf && \
-	echo "smtp_sasl_security_options = noanonymous" >> /etc/postfix/main.cf && \
-	echo "smtp_tls_security_level = encrypt" >> /etc/postfix/main.cf && \
-	echo "header_size_limit = 4096000" >> /etc/postfix/main.cf && \
-	echo "relayhost = [smtp.sendgrid.net]:587" >> /etc/postfix/main.cf && \
-	cat /etc/postfix/main.cf
+RUN chmod 000 /startup/sendmail.sh && \
+    chmod +x /startup/sendmail.sh
 
-RUN service postfix restart
+#################################
+# Nagios and Apache
+#################################
+	
+RUN apt-get install -y wget build-essential apache2 php apache2-mod-php7.0 php-gd libgd-dev unzip && \
+    useradd nagios && \
+	groupadd nagcmd && \
+	usermod -a -G nagcmd nagios && \
+	usermod -a -G nagios,nagcmd www-data
 
-RUN echo "This is the body of the email" | mail -s "This is the subject line" rasmusj@trendsales.dk
+# Download and extract the Nagios core
 
-EXPOSE 80 25 587
+RUN	cd ~ && \
+	wget https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.2.0.tar.gz && \
+	tar -xzf nagios*.tar.gz && \
+	cd nagios-4.2.0 && \
 
-# CMD ["executable","param1","param2"]
+	./configure --with-nagios-group=nagios --with-command-group=nagcmd && \
+	make all && \
+	make install && \
+	make install-commandmode && \
+	make install-init && \
+	make install-config && \
+	/usr/bin/install -c -m 644 sample-config/httpd.conf /etc/apache2/sites-available/nagios.conf && \
+	cp -R contrib/eventhandlers/ /usr/local/nagios/libexec/ && \
+	chown -R nagios:nagios /usr/local/nagios/libexec/eventhandlers
 
-RUN cat /var/log/mail.log
+RUN	cd ~
+RUN	wget https://nagios-plugins.org/download/nagios-plugins-2.1.2.tar.gz
+RUN	tar -xzf nagios-plugins*.tar.gz
+RUN	cd nagios-plugins-2.1.2/ && \
+	./configure --with-nagios-user=nagios --with-nagios-group=nagios --with-openssl && \
+	make && \
+	make install
+	
+RUN a2enmod rewrite
+RUN a2enmod cgi
+RUN htpasswd -c -b /usr/local/nagios/etc/htpasswd.users nagiosadmin password
+RUN ln -s /etc/apache2/sites-available/nagios.conf /etc/apache2/sites-enabled/
+	
+#################################
+# Final configuration
+#################################
+
+RUN service apache2 start
+RUN service nagios start
+
+EXPOSE 80
+
+ENTRYPOINT service apache2 restart && \
+		   service nagios start && \
+		   bash && \
+		   cat /usr/local/nagios/etc/htpasswd.users && \
+		   tail -f /usr/local/nagios/var/nagios.log

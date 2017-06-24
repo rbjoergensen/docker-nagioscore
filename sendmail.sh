@@ -1,0 +1,3 @@
+#!/bin/bash
+curl -X POST "https://api.sendgrid.com/v3/mail/send" -H "Authorization: Bearer SENDGRID_API_KEY" -H "Content-Type: application/json" -d \
+'{  "personalizations": [    {      "to": [        {          "email": "rasmus@callofthevoid.dk"        }      ],      "subject": "Hello, World!"    }  ],  "from": {    "email": "bashtest@callofthevoid.dk"  },  "content": [    {      "type": "text/plain",      "value": "Hello, World!"    }  ]}'
