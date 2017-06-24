@@ -10,7 +10,7 @@ RUN apt-get -y update && \
     mkdir /utilities && \
 	apt-get -y install curl
 
-COPY ./sendmail.sh /utilities/sendmail.sh
+COPY sendmail.sh /utilities/sendmail.sh
 
 RUN chmod 000 /utilities/sendmail.sh && \
     chmod +x /utilities/sendmail.sh
@@ -54,6 +54,24 @@ RUN a2enmod rewrite
 RUN a2enmod cgi
 RUN htpasswd -c -b /usr/local/nagios/etc/htpasswd.users nagiosadmin password
 RUN ln -s /etc/apache2/sites-available/nagios.conf /etc/apache2/sites-enabled/
+
+#################################
+# Nagios Config Files
+#################################
+
+RUN rm -rf /usr/local/nagios/etc/nagios.cfg && \
+    rm -rf /usr/local/nagios/etc/objects/commands.cfg && \
+	rm -rf /usr/local/nagios/etc/objects/contacts.cfg
+
+COPY nagios.cfg /usr/local/nagios/etc/nagios.cfg
+COPY commands.cfg /usr/local/nagios/etc/objects/commands.cfg
+COPY contacts.cfg /usr/local/nagios/etc/objects/contacts.cfg
+	
+#################################
+# Host Config Files
+#################################
+	
+COPY hostconfig/ /usr/local/nagios/etc/servers
 	
 #################################
 # Final configuration
