@@ -3,17 +3,12 @@ FROM ubuntu:16.04
 MAINTAINER rbjoergensen <rasmusbojorgensen@gmail.com>
 
 #################################
-# Mail script using Sendgrid
+# Updates and installs
 #################################
 
 RUN apt-get -y update && \
     mkdir /utilities && \
 	apt-get -y install curl
-
-COPY sendmail.sh /utilities/sendmail.sh
-
-RUN chmod 000 /utilities/sendmail.sh && \
-    chmod +x /utilities/sendmail.sh
 
 #################################
 # Nagios and Apache
@@ -72,15 +67,36 @@ COPY contacts.cfg /usr/local/nagios/etc/objects/contacts.cfg
 #################################
 	
 COPY hostconfig/ /usr/local/nagios/etc/servers
+
+#################################
+# Mail script using Sendgrid
+#################################
+
+COPY sendmail.sh /utilities/sendmail.sh
+
+RUN chmod 000 /utilities/sendmail.sh && \
+    chmod +x /utilities/sendmail.sh
 	
 #################################
 # Final configuration
 #################################
 
+#RUN /utilities/sendmail.sh -a ".........." -t "...@....dk" -f "....@.....dk" -s "test test" -b "test"
+
 EXPOSE 80
+
+RUN cat /usr/local/nagios/var/nagios.log
 
 ENTRYPOINT service apache2 restart && \
 		   service nagios start && \
 		   bash && \
 		   cat /usr/local/nagios/etc/htpasswd.users && \
 		   tail -f /usr/local/nagios/var/nagios.log
+		   
+		   
+		   
+		   
+		   
+		   
+		   
+		   
