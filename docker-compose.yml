@@ -1,0 +1,11 @@
+version: '2'
+services:
+  nagios:
+    image: wrix/docker-nagios:latest
+    ports:
+      - 5050:80
+    environment:
+      MAIL_APIKEY: "apikey"
+      MAILTO: "rasmusj@wrix.dk"
+      MAILFROM: "nagios@wrix.dk"
+    restart: always
