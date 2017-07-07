@@ -1,5 +1,6 @@
 # Nagios Project
 This project was to create a Nagios Core server in a docker container.
+
 It is tested and works.
 
 ## Instructions
@@ -19,5 +20,18 @@ Requirements for running on different operating systems.
 - Allow external hosts to use NRPE arguments with nagios-nrpe-server.
 
 ### Mail/Notifications
+In my setup I am using a bash script that sends a post to a Sendgrid API endpoint using JSON to send mail.
+
+You can edit the sendmail.sh script to contain your own mail script if you use something else.
+
+Just remember to edit the commands.cfg file to reflect the changes :)
 
 ### Host Configuration
+
+Any hostfiles ending in .cfg placed in the servers folder will be loaded.
+
+Nagios won't run and will throw an error message if there are errors in these or missing dependencies.
+
+```
+/usr/local/nagios/etc/servers
+```
